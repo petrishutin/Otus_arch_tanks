@@ -1,5 +1,5 @@
 test:
 	flake8
-	mypy game_objects
+	mypy game/game_objects.py
 	python -m pytest ./tests
 
