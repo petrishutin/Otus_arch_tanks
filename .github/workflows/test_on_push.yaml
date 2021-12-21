@@ -19,6 +19,6 @@ jobs:
       - name: Run flake8
         run: flake8
       - name: Run mypy
-        run: mypy game_objects
+        run: mypy game/game_objects.py
       - name: Run pytests
         run: pytest -h tests
