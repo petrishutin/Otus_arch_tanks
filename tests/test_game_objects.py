@@ -1,6 +1,7 @@
 import pytest
 
-from game.game_objects import UObject, Vector, MovableObject, RotableObject, Move, Rotate
+from game.game_objects import UObject, Vector, MovableObject, RotableObject, Move, Rotate, ErrorHandler
+from logger import logger
 
 
 def test_vector():
@@ -35,7 +36,7 @@ def rotable_tank():
     return RotableObject(tank)
 
 
-def test_ratate_tank(rotable_tank):
+def test_rotate_tank(rotable_tank):
     assert rotable_tank.direction == 0
     assert rotable_tank.angular_velocity == 0
     rotable_tank.angular_velocity = 5
@@ -45,5 +46,22 @@ def test_ratate_tank(rotable_tank):
 
 
 def test_move_unmovable(rotable_tank):
+    """Check if attempt to move unmovable object in handler raises an error in run time"""
     with pytest.raises(AttributeError):
         Move(rotable_tank).execute()
+
+
+def test_error_handler(rotable_tank, caplog):
+    """Check if attempt to move unmovable object in handler does NOT raise an error in run time"""
+    ErrorHandler().handel(Move(rotable_tank))
+    assert 'Default error handler called. Error' in caplog.text
+
+
+def test_error_handler_with_error_mapping(rotable_tank, caplog):
+    def _custom_handler(e):
+        logger.error(f'Custom error handler called. Error{e}:')
+
+    handler = ErrorHandler()
+    handler.error_mapping.update({AttributeError: _custom_handler})
+    handler.handel(Move(rotable_tank))
+    assert 'Custom error handler called. Error' in caplog.text

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import abc
+from logger import logger
 from math import sqrt
-from typing import List
+from typing import List, Dict, Callable, Type
 
 MAX_DIRECTIONS: int = 4
 
@@ -44,10 +47,10 @@ class UObject:
 
 class MovableObject:
 
-    def __init__(self, obj: object, position: Vector):
+    def __init__(self, obj: object, position: Vector, velocity: Vector = None):
         self.obj = obj
         self.position = position
-        self.velocity = Vector([0, 0])
+        self.velocity = velocity or Vector([0, 0])
 
 
 class RotableObject:
@@ -56,6 +59,31 @@ class RotableObject:
         self.direction: int = direction
         self.angular_velocity = 0
         self.max_directions = MAX_DIRECTIONS
+
+
+class ErrorHandler:
+
+    def __init__(self, error_mapping: Dict[Type, Callable] = None):
+        self.error_mapping = error_mapping or {}
+
+    # @property
+    # def error_mapping(self) -> Dict[str, Callable]:
+    #     return self.error_mapping
+    #
+    # @error_mapping.setter
+    # def error_mapping(self, error_mapping: Dict[str, Callable]):
+    #     self.error_mapping = error_mapping
+
+    @staticmethod
+    def _default_handler(e: Exception):
+        logger.error(f'Default error handler called. Error{e}:')
+
+    def handel(self, command: Command):
+        try:
+            command.execute()
+        except Exception as e:
+            handler = self.error_mapping.get(e.__class__, self._default_handler)
+            handler(e)
 
 
 class Command(abc.ABC):
